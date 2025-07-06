@@ -1,0 +1,115 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+            <i class="bi bi-calendar-check"></i> Academic Timetable
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                {% if session.get('access_token') %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('dashboard') }}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('timetable.view_timetable') }}">
+                        <i class="bi bi-calendar-week"></i> Timetable
+                    </a>
+                </li>
+                
+                {% if session.get('user_role') in ['admin', 'faculty'] %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-gear"></i> Manage
+                    </a>
+                    <ul class="dropdown-menu">
+                        {% if session.get('user_role') == 'admin' %}
+                        <li><a class="dropdown-item" href="{{ url_for('admin.institutions') }}">
+                            <i class="bi bi-buildings"></i> Institutions
+                        </a></li>
+                        {% endif %}
+                        <li><a class="dropdown-item" href="{{ url_for('admin.departments') }}">
+                            <i class="bi bi-building"></i> Departments
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin.teachers') }}">
+                            <i class="bi bi-person-badge"></i> Teachers
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin.courses') }}">
+                            <i class="bi bi-book"></i> Courses
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin.rooms') }}">
+                            <i class="bi bi-door-open"></i> Rooms
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin.timeslots') }}">
+                            <i class="bi bi-clock"></i> Time Slots
+                        </a></li>
+                    </ul>
+                </li>
+                
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-download"></i> Export
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('export.export_excel') }}">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> Excel Export
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('export.export_csv') }}">
+                            <i class="bi bi-file-earmark-text"></i> CSV Export
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('export.export_summary') }}">
+                            <i class="bi bi-file-earmark-bar-graph"></i> Summary Report
+                        </a></li>
+                    </ul>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('timetable.analytics') }}">
+                        <i class="bi bi-graph-up"></i> Analytics
+                    </a>
+                </li>
+                {% endif %}
+                {% endif %}
+            </ul>
+            
+            <ul class="navbar-nav">
+                {% if session.get('access_token') %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i> 
+                        {{ session.get('user_email', 'User') }}
+                        {% if session.get('user_role') %}
+                        <span class="badge bg-secondary ms-1">{{ session.get('user_role').title() }}</span>
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">
+                            <i class="bi bi-person-gear"></i> Profile
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a></li>
+                    </ul>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('auth.login') }}">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('auth.signup') }}">
+                        <i class="bi bi-person-plus"></i> Sign Up
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

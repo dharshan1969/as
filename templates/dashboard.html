@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Academic Timetable Generator{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+            <p class="text-muted">Welcome to the Academic Timetable Management System</p>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Timetable Management -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 text-primary mb-3">
+                        <i class="bi bi-calendar-week"></i>
+                    </div>
+                    <h5 class="card-title">View Timetable</h5>
+                    <p class="card-text">View and manage current timetable schedules</p>
+                    <a href="{{ url_for('timetable.view_timetable') }}" class="btn btn-primary">
+                        <i class="bi bi-eye"></i> View Timetable
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        {% if session.get('user_role') in ['admin', 'faculty'] %}
+        <!-- Setup Wizard -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-success">
+                <div class="card-body text-center">
+                    <div class="display-6 text-success mb-3">
+                        <i class="bi bi-list-check"></i>
+                    </div>
+                    <h5 class="card-title">Quick Setup</h5>
+                    <p class="card-text">Get started instantly with sample data</p>
+                    <div class="d-grid gap-2">
+                        <form method="POST" action="/demo/generate-sample-data" class="d-inline">
+                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Generate sample university data? This will help you test the system immediately.')">
+                                <i class="bi bi-magic"></i> Generate Sample Data
+                            </button>
+                        </form>
+                        <a href="{{ url_for('admin.institutions') }}" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-gear"></i> Manual Setup
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Administrative Functions -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 text-primary mb-3">
+                        <i class="bi bi-gear"></i>
+                    </div>
+                    <h5 class="card-title">Manage Data</h5>
+                    <p class="card-text">Manage courses, teachers, rooms, and departments</p>
+                    <div class="btn-group-vertical w-100" role="group">
+                        <a href="{{ url_for('admin.departments') }}" class="btn btn-outline-primary btn-sm">Departments</a>
+                        <a href="{{ url_for('admin.teachers') }}" class="btn btn-outline-primary btn-sm">Teachers</a>
+                        <a href="{{ url_for('admin.courses') }}" class="btn btn-outline-primary btn-sm">Courses</a>
+                        <a href="{{ url_for('admin.rooms') }}" class="btn btn-outline-primary btn-sm">Rooms</a>
+                        <a href="{{ url_for('admin.timeslots') }}" class="btn btn-outline-primary btn-sm">Time Slots</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Features -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-info">
+                <div class="card-body text-center">
+                    <div class="display-6 text-info mb-3">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <h5 class="card-title">AI Analytics</h5>
+                    <p class="card-text">AI-powered scheduling optimization</p>
+                    <div class="btn-group-vertical w-100" role="group">
+                        <a href="{{ url_for('ai.analyze_timetable') }}" class="btn btn-outline-info btn-sm">Analyze Conflicts</a>
+                        <a href="{{ url_for('ai.suggest_rooms') }}" class="btn btn-outline-info btn-sm">Room Suggestions</a>
+                        <a href="{{ url_for('ai.optimize_workload') }}" class="btn btn-outline-info btn-sm">Optimize Workload</a>
+                        <a href="{{ url_for('ai.generate_summary') }}" class="btn btn-outline-info btn-sm">AI Summary</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Timetable Generation -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 text-warning mb-3">
+                        <i class="bi bi-lightning"></i>
+                    </div>
+                    <h5 class="card-title">Generate Timetable</h5>
+                    <p class="card-text">Automatically generate optimized timetables</p>
+                    <form method="POST" action="{{ url_for('timetable.generate_timetable') }}" class="d-inline">
+                        <button type="submit" class="btn btn-warning" onclick="return confirm('This will replace the current timetable. Continue?')">
+                            <i class="bi bi-magic"></i> Generate
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if session.get('user_role') == 'admin' %}
+        <!-- Institution Management -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 text-info mb-3">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <h5 class="card-title">Institutions</h5>
+                    <p class="card-text">Manage educational institutions</p>
+                    <a href="{{ url_for('admin.institutions') }}" class="btn btn-info">
+                        <i class="bi bi-buildings"></i> Manage
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Export Options -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 text-secondary mb-3">
+                        <i class="bi bi-download"></i>
+                    </div>
+                    <h5 class="card-title">Export Data</h5>
+                    <p class="card-text">Export timetables and reports</p>
+                    <div class="btn-group-vertical w-100" role="group">
+                        <a href="{{ url_for('export.export_excel') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> Excel
+                        </a>
+                        <a href="{{ url_for('export.export_csv') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-file-earmark-text"></i> CSV
+                        </a>
+                        <a href="{{ url_for('export.export_summary') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-file-earmark-bar-graph"></i> Summary
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Management -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 text-light mb-3">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <h5 class="card-title">Profile</h5>
+                    <p class="card-text">Manage your account settings</p>
+                    <a href="{{ url_for('auth.profile') }}" class="btn btn-light">
+                        <i class="bi bi-person-gear"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Stats (if applicable) -->
+    {% if session.get('user_role') in ['admin', 'faculty'] %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4><i class="bi bi-graph-up"></i> Quick Statistics</h4>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">Total Courses</h6>
+                    <div class="h4 text-primary">--</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">Active Teachers</h6>
+                    <div class="h4 text-success">--</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">Available Rooms</h6>
+                    <div class="h4 text-warning">--</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">Time Slots</h6>
+                    <div class="h4 text-info">--</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

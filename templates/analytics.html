@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Academic Timetable Generator{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="bi bi-graph-up"></i> Analytics & Reports</h2>
+            <p class="text-muted">Insights and statistics for your timetable system</p>
+        </div>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="display-6 text-primary mb-2">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <h5 class="card-title">Total Classes</h5>
+                    <div class="h3 text-primary">{{ analytics.total_classes }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="display-6 text-success mb-2">
+                        <i class="bi bi-door-open"></i>
+                    </div>
+                    <h5 class="card-title">Rooms Used</h5>
+                    <div class="h3 text-success">{{ analytics.room_utilization|length }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="display-6 text-warning mb-2">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <h5 class="card-title">Active Teachers</h5>
+                    <div class="h3 text-warning">{{ analytics.teacher_workload|length }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="display-6 text-info mb-2">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <h5 class="card-title">Available Slots</h5>
+                    <div class="h3 text-info">{{ analytics.total_timeslots }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Room Utilization -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="bi bi-door-open"></i> Room Utilization</h5>
+                </div>
+                <div class="card-body">
+                    {% if analytics.room_utilization %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Room</th>
+                                    <th>Classes Scheduled</th>
+                                    <th>Utilization</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for room, count in analytics.room_utilization.items() %}
+                                <tr>
+                                    <td>{{ room }}</td>
+                                    <td>{{ count }}</td>
+                                    <td>
+                                        {% set utilization = (count / analytics.total_timeslots * 100) if analytics.total_timeslots > 0 else 0 %}
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ utilization }}%"
+                                                 aria-valuenow="{{ utilization }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                {{ "%.1f"|format(utilization) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="text-muted">
+                            <i class="bi bi-door-open display-4"></i>
+                            <p class="mt-2">No room utilization data available</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Teacher Workload -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="bi bi-person-badge"></i> Teacher Workload</h5>
+                </div>
+                <div class="card-body">
+                    {% if analytics.teacher_workload %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Teacher</th>
+                                    <th>Classes Assigned</th>
+                                    <th>Load Distribution</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for teacher, count in analytics.teacher_workload.items() %}
+                                <tr>
+                                    <td>{{ teacher }}</td>
+                                    <td>{{ count }}</td>
+                                    <td>
+                                        {% set max_workload = analytics.teacher_workload.values()|max %}
+                                        {% set workload_percentage = (count / max_workload * 100) if max_workload > 0 else 0 %}
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar 
+                                                        {% if workload_percentage > 80 %}bg-danger
+                                                        {% elif workload_percentage > 60 %}bg-warning
+                                                        {% else %}bg-success{% endif %}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ workload_percentage }}%"
+                                                 aria-valuenow="{{ workload_percentage }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                {{ count }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="text-muted">
+                            <i class="bi bi-person-badge display-4"></i>
+                            <p class="mt-2">No teacher workload data available</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Export Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-download"></i> Export Analytics</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Download detailed analytics reports in various formats</p>
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('export.export_summary') }}" class="btn btn-primary">
+                            <i class="bi bi-file-earmark-bar-graph"></i> Summary Report
+                        </a>
+                        <a href="{{ url_for('export.export_excel') }}" class="btn btn-success">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> Excel Report
+                        </a>
+                        <a href="{{ url_for('export.export_csv') }}" class="btn btn-info">
+                            <i class="bi bi-file-earmark-text"></i> CSV Data
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Auto-refresh analytics data every 5 minutes
+setTimeout(() => {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %}

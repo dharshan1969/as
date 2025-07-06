@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}AI Timetable Analysis{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>AI Timetable Analysis</h2>
+                <a href="{{ url_for('timetable.view_timetable') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Timetable
+                </a>
+            </div>
+
+            {% if analysis.error %}
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle"></i>
+                {{ analysis.error }}
+            </div>
+            {% else %}
+            
+            <!-- Utilization Score -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Utilization Score</h5>
+                            <h2 class="text-primary">{{ analysis.utilization_score }}%</h2>
+                            <small class="text-muted">Overall efficiency</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conflicts Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle text-warning"></i>
+                        Detected Conflicts
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if analysis.conflicts %}
+                    <div class="list-group">
+                        {% for conflict in analysis.conflicts %}
+                        <div class="list-group-item list-group-item-warning">
+                            <i class="bi bi-warning"></i> {{ conflict }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-success">
+                        <i class="bi bi-check-circle"></i>
+                        No conflicts detected in the current timetable.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Suggestions Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightbulb text-info"></i>
+                        AI Suggestions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if analysis.suggestions %}
+                    <div class="list-group">
+                        {% for suggestion in analysis.suggestions %}
+                        <div class="list-group-item">
+                            <i class="bi bi-arrow-right text-info"></i> {{ suggestion }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-muted">
+                        No specific suggestions at this time.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Teacher Workload Analysis -->
+            {% if analysis.teacher_workload_analysis %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-badge"></i>
+                        Teacher Workload Analysis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Teacher</th>
+                                    <th>Hours per Week</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for teacher, hours in analysis.teacher_workload_analysis.items() %}
+                                <tr>
+                                    <td>{{ teacher }}</td>
+                                    <td>{{ hours }}</td>
+                                    <td>
+                                        {% if hours > 40 %}
+                                        <span class="badge bg-danger">Overloaded</span>
+                                        {% elif hours < 20 %}
+                                        <span class="badge bg-warning">Underutilized</span>
+                                        {% else %}
+                                        <span class="badge bg-success">Balanced</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

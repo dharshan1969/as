@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Academic Timetable Generator{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="bi bi-person-circle"></i> User Profile</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('auth.update_profile') }}">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" value="{{ user.email }}" readonly>
+                            <div class="form-text">Email cannot be changed</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ user.name }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Role</label>
+                            <input type="text" class="form-control" id="role" value="{{ user.role.title() }}" readonly>
+                            <div class="form-text">Role is assigned by administrators</div>
+                        </div>
+                        
+                        {% if institutions %}
+                        <div class="mb-3">
+                            <label for="institution_id" class="form-label">Institution</label>
+                            <select class="form-select" id="institution_id" name="institution_id">
+                                <option value="">Select Institution</option>
+                                {% for institution in institutions %}
+                                <option value="{{ institution.id }}" {% if user.institution_id == institution.id %}selected{% endif %}>
+                                    {{ institution.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% endif %}
+                        
+                        {% if user.department %}
+                        <div class="mb-3">
+                            <label for="department" class="form-label">Department</label>
+                            <input type="text" class="form-control" id="department" value="{{ user.department.name }}" readonly>
+                            <div class="form-text">Department assignment is managed by administrators</div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Account Created</label>
+                            <div class="form-control-plaintext">{{ user.created_at.strftime('%B %d, %Y at %I:%M %p') }}</div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Update Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-6">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary w-100">
+                                <i class="bi bi-arrow-left"></i> Back to Dashboard
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger w-100">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

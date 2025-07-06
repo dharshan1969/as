@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Timetable - Academic Timetable Generator{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-calendar-week"></i> Timetable</h2>
+                
+                {% if session.get('user_role') in ['admin', 'faculty'] %}
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateModal">
+                        <i class="bi bi-magic"></i> Generate
+                    </button>
+                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#clearModal">
+                        <i class="bi bi-trash"></i> Clear
+                    </button>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bi bi-download"></i> Export
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('export.export_excel') }}">
+                                <i class="bi bi-file-earmark-spreadsheet"></i> Excel
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('export.export_csv') }}">
+                                <i class="bi bi-file-earmark-text"></i> CSV
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('export.export_summary') }}">
+                                <i class="bi bi-file-earmark-bar-graph"></i> Summary
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    {% if timetable_grid %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-table"></i> Weekly Schedule</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Time</th>
+                                    {% for day in days_of_week %}
+                                    <th>{{ day }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set time_slots = [] %}
+                                {% for timeslot in timeslots %}
+                                    {% set time_key = timeslot.start_time.strftime('%H:%M') + '-' + timeslot.end_time.strftime('%H:%M') %}
+                                    {% if time_key not in time_slots %}
+                                        {% set _ = time_slots.append(time_key) %}
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% for time_slot in time_slots|unique %}
+                                <tr>
+                                    <td class="fw-bold">{{ time_slot }}</td>
+                                    {% for day in days_of_week %}
+                                    <td>
+                                        {% if day in timetable_grid and time_slot in timetable_grid[day] %}
+                                            {% set entry_data = timetable_grid[day][time_slot] %}
+                                            <div class="schedule-entry" data-entry-id="{{ entry_data.entry.id }}">
+                                                <div class="fw-bold text-primary">{{ entry_data.course.code }}</div>
+                                                <div class="small">{{ entry_data.course.name[:30] }}{% if entry_data.course.name|length > 30 %}...{% endif %}</div>
+                                                <div class="small text-muted">
+                                                    <i class="bi bi-person"></i> {{ entry_data.teacher.name }}
+                                                </div>
+                                                <div class="small text-muted">
+                                                    <i class="bi bi-geo-alt"></i> {{ entry_data.room.name }}
+                                                </div>
+                                                {% if entry_data.entry.is_manual %}
+                                                <div class="small">
+                                                    <span class="badge bg-warning">Manual</span>
+                                                </div>
+                                                {% endif %}
+                                                {% if session.get('user_role') in ['admin', 'faculty'] %}
+                                                <div class="mt-1">
+                                                    <button class="btn btn-sm btn-outline-secondary" onclick="editEntry({{ entry_data.entry.id }})">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            <div class="text-muted text-center">-</div>
+                                        {% endif %}
+                                    </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="display-1 text-muted mb-3">
+                        <i class="bi bi-calendar-x"></i>
+                    </div>
+                    <h4>No Timetable Available</h4>
+                    <p class="text-muted">No timetable has been generated yet.</p>
+                    
+                    {% if session.get('user_role') in ['admin', 'faculty'] %}
+                    <div class="alert alert-warning mt-3">
+                        <h6><i class="bi bi-exclamation-triangle"></i> Setup Required</h6>
+                        <p class="mb-2">To generate a timetable, you need to set up the following data first:</p>
+                        <ul class="mb-2">
+                            <li>At least one institution</li>
+                            <li>At least one department</li>
+                            <li>Time slots for classes</li>
+                            <li>Rooms with capacity information</li>
+                            <li>Teachers with availability</li>
+                            <li>Courses to be scheduled</li>
+                        </ul>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="{{ url_for('admin.institutions') }}" class="btn btn-success btn-sm">
+                                <i class="bi bi-play-circle"></i> Start Setup
+                            </a>
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#generateModal">
+                                <i class="bi bi-magic"></i> Generate Timetable
+                            </button>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mt-3">
+                        <p class="mb-0">Contact your administrator to set up the timetable data and generate schedules.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if session.get('user_role') in ['admin', 'faculty'] %}
+<!-- Generate Timetable Modal -->
+<div class="modal fade" id="generateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-magic"></i> Generate Timetable</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('timetable.generate_timetable') }}">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        This will replace the current timetable. Make sure you have all required data (courses, teachers, rooms, time slots) configured.
+                    </div>
+                    
+                    {% if user.role == 'admin' and departments %}
+                    <div class="mb-3">
+                        <label for="department_id" class="form-label">Department (Optional)</label>
+                        <select class="form-select" id="department_id" name="department_id">
+                            <option value="">All Departments</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}">{{ dept.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Leave blank to generate for all departments</div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-magic"></i> Generate
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Clear Timetable Modal -->
+<div class="modal fade" id="clearModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-trash"></i> Clear Timetable</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('timetable.clear_timetable') }}">
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        This will permanently delete all timetable entries. This action cannot be undone.
+                    </div>
+                    
+                    {% if user.role == 'admin' and departments %}
+                    <div class="mb-3">
+                        <label for="clear_department_id" class="form-label">Department (Optional)</label>
+                        <select class="form-select" id="clear_department_id" name="department_id">
+                            <option value="">All Departments</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}">{{ dept.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Leave blank to clear all departments</div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Clear All
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function editEntry(entryId) {
+    // Simple edit functionality - can be enhanced
+    alert('Edit functionality for entry ' + entryId + ' would be implemented here');
+}
+</script>
+{% endblock %}
